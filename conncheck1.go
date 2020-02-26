@@ -27,9 +27,8 @@ func connected(nodes []int, a int, b int) bool {
 func sort2(a, b int) (int, int) {
 	if a < b {
 		return a, b
-	} else {
-		return b, a
 	}
+	return b, a
 }
 
 // Merge 2 nodes.
