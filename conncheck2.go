@@ -1,29 +1,44 @@
-package conncheck1
+package conncheck2
 
 import (
 	"fmt"
 )
 
 // Initialize the connection map.
-// Every node is denoted by a nonzero number.
-// And every entry in the array is the node's group.
+// Node zero is a virtual node, representing leaf nodes (non-membership).
+// Node max + 1 is a virtual node, representing all nodes.
 // Initially, every node has its own group since it isn't connected.
-// Node zero is a guard element.
+// So every node's group is zero.
 func initialize(max int) []int {
-	nodes := make([]int, max+1)
-	for i := 0; i <= max; i++ {
-		nodes[i] = i
-	}
+	nodes := make([]int, max+2)
+	nodes[max+1] = max + 1
 	return nodes
 }
 
 // Check whether 2 nodes are connected.
-// If they have the same group, they are connected.
+// Group id 0 is unconnected, so skip those.
+// If nodes or their ancestors have the same group, they are connected.
+// If nodes are connected by their ancestors, connect them directly.
 func connected(nodes []int, a int, b int) bool {
-	return nodes[a] == nodes[b]
+	i, j := a, b
+	for {
+		left, right := nodes[i], nodes[j]
+		if left == 0 || right == 0 {
+			return false
+		}
+		if left == right {
+			return true
+		}
+		upleft, upright := nodes[left], nodes[right]
+		nodes[i] = upleft
+		i = upleft
+		nodes[j] = upright
+		j = upright
+	}
+	fmt.Errorf("Error checking connection between %v and %v\n", a, b)
+	return false
 }
 
-// Sort 2 nodes (helper function, used in merge)
 func sort2(a, b int) (int, int) {
 	if a < b {
 		return a, b
@@ -32,21 +47,14 @@ func sort2(a, b int) (int, int) {
 	}
 }
 
-// Merge 2 nodes.
-// Every node should end up with the same group id.
-// To ensure transitivity, sort the ids before merging.
-// By convention, always use the lower group id as the winner.
+// Merge 2 nodes by assigning them to the same group.
 func merge(nodes []int, a int, b int) {
 	lo, hi := sort2(a, b)
-	for i := 0; i < len(nodes); i++ {
-		if nodes[i] == hi {
-			nodes[i] = lo
-		}
-	}
+	nodes[hi] = lo
 }
 
 func main() {
-	fmt.Println("hello, this is the connection checker v1.")
+	fmt.Println("hello, this is the connection checker v2.")
 
 	nodes := initialize(10)
 	fmt.Println("start with ", nodes)
